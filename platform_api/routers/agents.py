@@ -1,4 +1,5 @@
 import uuid
+from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
@@ -9,6 +10,19 @@ from platform_api.models.brand import Brand
 from platform_api.models.brand_agent import BrandAgent, BrandAgentCreate, BrandAgentRead
 
 router = APIRouter(prefix="/brands/{slug}/agents", tags=["agents"])
+
+
+@router.get("", response_model=List[BrandAgentRead])
+def list_agents(
+    slug: str,
+    brand: Brand = Depends(get_brand_from_api_key),
+    session: Session = Depends(get_session),
+):
+    return session.exec(
+        select(BrandAgent)
+        .where(BrandAgent.brand_id == brand.id)
+        .order_by(BrandAgent.priority.desc())
+    ).all()
 
 
 @router.post("", response_model=BrandAgentRead, status_code=201)

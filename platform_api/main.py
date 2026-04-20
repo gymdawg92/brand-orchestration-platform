@@ -2,8 +2,10 @@ import logging
 import time
 import uuid
 from contextlib import asynccontextmanager
+from typing import Any, Dict
 
 from fastapi import FastAPI, Request, Response
+from pydantic import BaseModel
 
 from platform_api.database import create_db_and_tables
 from platform_api.logging_config import setup_logging
@@ -59,3 +61,15 @@ app.include_router(metrics_router.router)
 app.include_router(brands.router)
 app.include_router(agents.router)
 app.include_router(tasks.router)
+
+
+class EchoBody(BaseModel):
+    brand_id: str
+    task_type: str
+    payload: Dict[str, Any] = {}
+
+
+@app.post("/echo", tags=["test"])
+async def echo_agent(body: EchoBody):
+    """Stub agent endpoint — returns the dispatched task for E2E testing."""
+    return {"status": "ok", "received": body.model_dump()}
