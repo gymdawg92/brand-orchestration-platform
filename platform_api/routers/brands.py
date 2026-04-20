@@ -5,7 +5,13 @@ from sqlmodel import Session, select
 
 from platform_api.auth import hash_api_key
 from platform_api.database import get_session
-from platform_api.models.brand import Brand, BrandCreate, BrandPatch, BrandRead
+from platform_api.models.brand import (
+    Brand,
+    BrandCreate,
+    BrandPatch,
+    BrandRead,
+    BrandTechStackRead,
+)
 from platform_api.models.brand_agent import BrandAgent
 
 router = APIRouter(prefix="/brands", tags=["brands"])
@@ -34,6 +40,19 @@ def get_brand(slug: str, session: Session = Depends(get_session)):
     if not brand:
         raise HTTPException(status_code=404, detail="Brand not found")
     return brand
+
+
+@router.get("/{slug}/tech-stack", response_model=BrandTechStackRead)
+def get_brand_tech_stack(slug: str, session: Session = Depends(get_session)):
+    brand = session.exec(select(Brand).where(Brand.slug == slug)).first()
+    if not brand:
+        raise HTTPException(status_code=404, detail="Brand not found")
+    config = brand.config or {}
+    return BrandTechStackRead(
+        project_refs=config.get("project_refs", []),
+        tech_stack=config.get("tech_stack", {}),
+        updated_at=brand.updated_at,
+    )
 
 
 @router.patch("/{slug}", response_model=BrandRead)

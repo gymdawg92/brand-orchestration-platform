@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import sqlalchemy as sa
 from sqlmodel import Column, Field, SQLModel
@@ -47,4 +47,10 @@ class BrandRead(SQLModel):
     status: BrandStatus
     config: Optional[Dict[str, Any]]
     created_at: datetime
+    updated_at: datetime
+
+
+class BrandTechStackRead(SQLModel):
+    project_refs: List[Dict[str, Any]]
+    tech_stack: Dict[str, Any]
     updated_at: datetime
