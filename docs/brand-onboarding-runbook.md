@@ -133,7 +133,93 @@ curl -X PATCH https://gentle-peace-production-4b05.up.railway.app/brands/your-sl
 
 Note: `PATCH` does **not** support changing `slug`. To rename a brand, create the new one and delete the old one (see below).
 
-## Step 6 — Delete / rename a brand
+---
+
+## Step 6 — Declare project refs and tech stack
+
+Brands should declare their codebase/project references and a machine-readable tech stack so agents can plan work without the board having to dictate the stack each time. Both live inside `brand.config` as `project_refs` (a list) and `tech_stack` (an object). Read them back with:
+
+```bash
+curl https://gentle-peace-production-4b05.up.railway.app/brands/your-slug/tech-stack | jq '.'
+```
+
+Response shape:
+
+```json
+{
+  "project_refs": [
+    { "type": "claude_code", "id": "<project-id>", "label": "<label>", "repo_url": "<url-or-null>" }
+  ],
+  "tech_stack": {
+    "languages": ["..."],
+    "frameworks": ["..."],
+    "data": ["..."],
+    "distribution": ["..."],
+    "notes": "..."
+  },
+  "updated_at": "2026-04-20T..."
+}
+```
+
+`project_refs` is **typed but opaque** — the platform does not introspect or validate the referenced project today. The first `type` we support is `claude_code`; more can be added later without a schema change.
+
+Set both via a normal `PATCH /brands/:slug`:
+
+```bash
+curl -X PATCH https://gentle-peace-production-4b05.up.railway.app/brands/your-slug \
+  -H "Content-Type: application/json" \
+  -d '{
+    "config": {
+      "project_refs": [
+        {
+          "type": "claude_code",
+          "id": "my-project-id",
+          "label": "My Project",
+          "repo_url": "https://github.com/you/your-repo"
+        }
+      ],
+      "tech_stack": {
+        "languages": ["typescript"],
+        "frameworks": ["next.js"],
+        "data": ["postgres"],
+        "distribution": ["vercel"],
+        "notes": "Describe anything that does not fit the taxonomy above."
+      }
+    }
+  }'
+```
+
+Notes:
+
+- `PATCH` replaces `config` wholesale. Preserve existing keys (e.g. `vertical`, `agent_model`, `timezone`) by fetching the brand first and merging before PATCHing. The helper script in `scripts/seed-auxo-tech-stack.sh` shows the merge pattern.
+- If a Claude Code project is not yet registered for the brand, attach a **placeholder ref** and leave a TODO to fill in the real project id + repo url later:
+
+  ```json
+  {
+    "type": "claude_code",
+    "id": "<brand>-<surface>-placeholder",
+    "label": "<brand> <surface>",
+    "repo_url": null
+  }
+  ```
+
+- Keys under `tech_stack` are free-form today — keep them narrow (`languages`, `frameworks`, `data`, `distribution`, `notes`) so agents can rely on the shape. No validation on the server yet.
+
+Done when `GET /brands/your-slug/tech-stack` returns a non-empty stack and at least one project ref.
+
+### Seeded for Auxo
+
+Auxo's iOS codebase is not yet registered as its own Paperclip project, so it runs with a placeholder ref. Run the helper post-deploy to apply the seed:
+
+```bash
+./scripts/seed-auxo-tech-stack.sh
+```
+
+Replace the `auxo-ios-placeholder` id and fill `repo_url` once Auxo's codebase is registered.
+
+---
+
+## Step 7 — Delete / rename a brand
 
 Deleting a brand also removes its registered agents. No auth is required for delete.
 

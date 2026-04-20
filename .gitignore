@@ -7,3 +7,4 @@ build/
 *.db
 .venv/
 venv/
+.venv-test/

@@ -52,6 +52,7 @@ Repeat the steps above with a different `slug`. Every brand is isolated — its 
 | GET | /metrics | none | Prometheus metrics |
 | POST | /brands | none | Create brand |
 | GET | /brands/:slug | none | Get brand |
+| GET | /brands/:slug/tech-stack | none | Get declared project refs + tech stack |
 | PATCH | /brands/:slug | none | Update brand |
 | DELETE | /brands/:slug | none | Delete brand |
 | POST | /brands/:slug/agents | API key | Register agent |
