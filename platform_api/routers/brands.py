@@ -59,5 +59,6 @@ def delete_brand(slug: str, session: Session = Depends(get_session)):
         select(BrandAgent).where(BrandAgent.brand_id == brand.id)
     ).all():
         session.delete(agent)
+    session.flush()
     session.delete(brand)
     session.commit()
