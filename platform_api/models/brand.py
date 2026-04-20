@@ -3,7 +3,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, Optional
 
-from sqlmodel import Column, Field, JSON, SQLModel
+import sqlalchemy as sa
+from sqlmodel import Column, Field, SQLModel
 
 
 class BrandStatus(str, Enum):
@@ -19,7 +20,7 @@ class Brand(SQLModel, table=True):
     slug: str = Field(unique=True, index=True)
     name: str
     status: BrandStatus = Field(default=BrandStatus.active)
-    config: Optional[Dict[str, Any]] = Field(default=None, sa_column=Column(JSON))
+    config: Optional[Dict[str, Any]] = Field(default=None, sa_column=Column(sa.JSON))
     api_key_hash: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
