@@ -1,6 +1,6 @@
 # Brand Onboarding Runbook
 
-How to onboard a new brand onto the platform. Brand #1 (`demo-brand`) used these steps.
+How to onboard a new brand onto the platform. Brand #1 (`auxo`, AI-based fitness app) used these steps.
 
 ---
 
@@ -13,29 +13,34 @@ How to onboard a new brand onto the platform. Brand #1 (`demo-brand`) used these
 
 ## Step 1 — Create the brand
 
+Choose a URL-safe slug (lowercase, hyphens) that is unique across the platform.
+
 ```bash
+# Generate an API key — store this securely, it is hashed on write and cannot be recovered
+API_KEY="bop-<your-slug>-$(openssl rand -hex 12)"
+
 curl -X POST https://gentle-peace-production-4b05.up.railway.app/brands \
   -H "Content-Type: application/json" \
-  -d '{
-    "slug": "your-brand",
-    "name": "Your Brand Name",
-    "status": "active",
-    "api_key": "bop-<brand>-<random-hex>",
-    "config": {
-      "description": "One-line brand description",
-      "vertical": "e.g. fitness / ecomm / media",
-      "agent_model": "claude-sonnet-4-6",
-      "timezone": "America/New_York"
+  -d "{
+    \"slug\": \"your-slug\",
+    \"name\": \"Your Brand Name\",
+    \"status\": \"active\",
+    \"api_key\": \"$API_KEY\",
+    \"config\": {
+      \"description\": \"One-line brand description\",
+      \"vertical\": \"e.g. ai-fitness / ecomm / media\",
+      \"agent_model\": \"claude-sonnet-4-6\",
+      \"timezone\": \"America/New_York\"
     }
-  }'
+  }"
 ```
 
-**Store the `api_key` securely** — it is hashed on write and cannot be recovered.
+Example (brand #1): `slug=auxo`, `name=Auxo`, `vertical=ai-fitness`.
 
 Verify:
 
 ```bash
-curl https://gentle-peace-production-4b05.up.railway.app/brands/your-brand | jq '.'
+curl https://gentle-peace-production-4b05.up.railway.app/brands/your-slug | jq '.'
 ```
 
 ---
@@ -49,7 +54,7 @@ Each brand needs at least three agents: `content`, `ops`, `support`.
 BRAND_API_KEY="bop-<brand>-<your-key>"
 
 for TYPE in content ops support; do
-  curl -X POST https://gentle-peace-production-4b05.up.railway.app/brands/your-brand/agents \
+  curl -X POST https://gentle-peace-production-4b05.up.railway.app/brands/your-slug/agents \
     -H "Content-Type: application/json" \
     -H "X-Brand-API-Key: $BRAND_API_KEY" \
     -d "{
@@ -69,7 +74,7 @@ agent_ref: "https://gentle-peace-production-4b05.up.railway.app/echo"
 List registered agents:
 
 ```bash
-curl https://gentle-peace-production-4b05.up.railway.app/brands/your-brand/agents \
+curl https://gentle-peace-production-4b05.up.railway.app/brands/your-slug/agents \
   -H "X-Brand-API-Key: $BRAND_API_KEY" | jq '.'
 ```
 
@@ -79,19 +84,19 @@ curl https://gentle-peace-production-4b05.up.railway.app/brands/your-brand/agent
 
 ```bash
 # Content task
-curl -X POST https://gentle-peace-production-4b05.up.railway.app/brands/your-brand/tasks \
+curl -X POST https://gentle-peace-production-4b05.up.railway.app/brands/your-slug/tasks \
   -H "Content-Type: application/json" \
   -H "X-Brand-API-Key: $BRAND_API_KEY" \
   -d '{"task_type": "content", "payload": {"topic": "launch post", "format": "tweet"}}'
 
 # Ops task
-curl -X POST https://gentle-peace-production-4b05.up.railway.app/brands/your-brand/tasks \
+curl -X POST https://gentle-peace-production-4b05.up.railway.app/brands/your-slug/tasks \
   -H "Content-Type: application/json" \
   -H "X-Brand-API-Key: $BRAND_API_KEY" \
   -d '{"task_type": "ops", "payload": {"action": "check_status"}}'
 
 # Support task
-curl -X POST https://gentle-peace-production-4b05.up.railway.app/brands/your-brand/tasks \
+curl -X POST https://gentle-peace-production-4b05.up.railway.app/brands/your-slug/tasks \
   -H "Content-Type: application/json" \
   -H "X-Brand-API-Key: $BRAND_API_KEY" \
   -d '{"task_type": "support", "payload": {"query": "how do I reset my password?"}}'
@@ -121,7 +126,7 @@ curl https://gentle-peace-production-4b05.up.railway.app/health
 Use `PATCH` (no auth required) to update name, status, or config:
 
 ```bash
-curl -X PATCH https://gentle-peace-production-4b05.up.railway.app/brands/your-brand \
+curl -X PATCH https://gentle-peace-production-4b05.up.railway.app/brands/your-slug \
   -H "Content-Type: application/json" \
   -d '{"config": {"vertical": "fitness"}}'
 ```

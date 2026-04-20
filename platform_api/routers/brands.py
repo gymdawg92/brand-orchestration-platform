@@ -6,6 +6,7 @@ from sqlmodel import Session, select
 from platform_api.auth import hash_api_key
 from platform_api.database import get_session
 from platform_api.models.brand import Brand, BrandCreate, BrandPatch, BrandRead
+from platform_api.models.brand_agent import BrandAgent
 
 router = APIRouter(prefix="/brands", tags=["brands"])
 
@@ -54,5 +55,9 @@ def delete_brand(slug: str, session: Session = Depends(get_session)):
     brand = session.exec(select(Brand).where(Brand.slug == slug)).first()
     if not brand:
         raise HTTPException(status_code=404, detail="Brand not found")
+    for agent in session.exec(
+        select(BrandAgent).where(BrandAgent.brand_id == brand.id)
+    ).all():
+        session.delete(agent)
     session.delete(brand)
     session.commit()
