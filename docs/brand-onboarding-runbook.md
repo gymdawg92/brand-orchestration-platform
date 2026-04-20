@@ -131,6 +131,19 @@ curl -X PATCH https://gentle-peace-production-4b05.up.railway.app/brands/your-sl
   -d '{"config": {"vertical": "fitness"}}'
 ```
 
+Note: `PATCH` does **not** support changing `slug`. To rename a brand, create the new one and delete the old one (see below).
+
+## Step 6 — Delete / rename a brand
+
+Deleting a brand also removes its registered agents. No auth is required for delete.
+
+```bash
+curl -X DELETE https://gentle-peace-production-4b05.up.railway.app/brands/old-slug
+# → HTTP 204
+```
+
+To rename: create the new brand with the desired slug (Step 1), register its agents (Step 2), smoke-test (Step 3), then delete the old one.
+
 ---
 
 ## Agent endpoint contract
